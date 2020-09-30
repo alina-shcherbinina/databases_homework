@@ -60,6 +60,21 @@ select `representative`, `personal_income`(`sales`.`id`,`salesmen`.`salary`, `sa
 from sales, salesmen
 
 --Функция, высчитывающая доход компании с продажи, исходя из стоимости товара и проданного количества.
+
+DELIMITER //
+CREATE FUNCTION `general_income`(quantity int, sprice int)
+RETURNS decimal
+BEGIN
+	declare summ decimal;
+	set summ = quantity * sprice;
+	return summ;
+ END//
+DELIMITER ;
+
+select `general_income`(`sales`.`quantity`, `sales`.`sprice`) 
+from sales
+limit 15;
+
 --Процедура, выводящая список всех торгпредов–юбиляров текущего года (с указанием даты юбилея и возраста).
 --Процедура, выводящая список всех товаров в заданной группе (по id группы) в виде: товар, группа, артикул, отпускная цена, наличие на складе.
 --Процедура, выдающая по названию товара, список его продаж с указанием ФИО торгпреда (в формате Фамилия И.О.) за последние 7 дней (по умолчанию) / 14 дней / 30 дней.
