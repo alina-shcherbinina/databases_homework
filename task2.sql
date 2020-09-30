@@ -135,7 +135,7 @@ alter table sales
 add manprofit int
 after profit
 
---заполнить все проданные по данным из таблицы товаров и с учетом ставки соответствующего торгпреда*/
+--заполнить все проданные по данным из таблицы товаров и с учетом ставки соответствующего торгпреда
 
 update sales, salesmen 
 set sales.manprofit = (sales.quantity * sales.sprice) * salesmen.salary 

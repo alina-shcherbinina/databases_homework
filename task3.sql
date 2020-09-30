@@ -16,6 +16,7 @@ BEGIN
 DELIMITER ;
 
 select `jubilee`('2000-09-28'),`jubilee`('1999-09-28');
+select `jubilee`(`dateofbirth`) from salesmen;
 
 --Функция, преобразующая значение ФИО в фамилию с инициалами (например, Иванов Иван Сергеевич в Иванов И.С.).
 --При невозможности преобразования функция возвращает строку ######.
@@ -39,10 +40,24 @@ DELIMITER ;
 
 
 select `short_name`('Will', 'Hugh', 'Graham'), `short_name`('', '', 'Graham');
+select `short_name`(`name`, `middlename`, `surname`) from salesmen
 
 --Функция, высчитывающая доход торгпреда с продажи, исходя из ставки и суммы продажи.
 
+DELIMITER //
+CREATE FUNCTION `personal_income`(id int, st double, quantity int, sprice int)
+RETURNS decimal
+BEGIN
+	declare profit decimal;
+	declare summ int;
+	set summ = quantity * sprice;
+	set profit = summ * st; 
+	return profit;
+ END//
+DELIMITER ;
 
+select `representative`, `personal_income`(`sales`.`id`,`salesmen`.`salary`, `sales`.`quantity`, `sales`.`sprice`) 
+from sales, salesmen
 
 --Функция, высчитывающая доход компании с продажи, исходя из стоимости товара и проданного количества.
 --Процедура, выводящая список всех торгпредов–юбиляров текущего года (с указанием даты юбилея и возраста).
