@@ -29,7 +29,7 @@ BEGIN
   declare result char(70);
   set help1 = concat_ws('. ', left(name, 1), left(middle,1));
   set result = concat(concat_ws(' ', surname, help1), '.'); 
-  if result = null then 
+  if length(surname) < 1 or length(name) < 1 or length(middle) < 1 then 
   	return '######';  
   else 
   	return result;
@@ -38,9 +38,7 @@ BEGIN
 DELIMITER ;
 
 
-select `short_name`('Will', 'Hugh', 'Graham')
-
-drop function if exists short_name
+select `short_name`('Will', 'Hugh', 'Graham'), `short_name`('', '', 'Graham');
 
 --Функция, высчитывающая доход торгпреда с продажи, исходя из ставки и суммы продажи.
 
