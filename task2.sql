@@ -139,4 +139,4 @@ after profit
 
 update sales, salesmen 
 set sales.manprofit = (sales.quantity * sales.sprice) * salesmen.salary 
-where sales.representative = salesmen.salesman_id ;
+where sales.representative = salesmen.salesman_id;
