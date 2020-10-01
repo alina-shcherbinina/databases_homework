@@ -76,6 +76,75 @@ from sales
 limit 15;
 
 --Процедура, выводящая список всех торгпредов–юбиляров текущего года (с указанием даты юбилея и возраста).
---Процедура, выводящая список всех товаров в заданной группе (по id группы) в виде: товар, группа, артикул, отпускная цена, наличие на складе.
---Процедура, выдающая по названию товара, список его продаж с указанием ФИО торгпреда (в формате Фамилия И.О.) за последние 7 дней (по умолчанию) / 14 дней / 30 дней.
---Процедура, выводящая сведения о несоответствии цены в журнале продаж заявленной цене самого товара с учетом времени последнего изменения цены (если изменение цены произошло позднее даты продажи, такие данные не учитывать). Если таких случаев не обнаружено, процедура должна выводить сообщение об этом.
+
+INSERT INTO `salesmen` (`surname`, `name`, `middlename`, `dateofbirth`, `INN`, `salary`, `sfixed`)
+VALUES ('Graham', 'Will', NULL, '1980-09-28', NULL, '0.6', '6000');
+
+
+DELIMITER //
+CREATE PROCEDURE `salesmen_jubilee`()
+BEGIN
+ 	select `surname`, `jubilee`(`dateofbirth`),  year(now()) - year(dateofbirth) as `age`
+ 	from `salesmen`
+ 	where jubilee(`dateofbirth`) != -1;
+END//
+DELIMITER ;
+
+call `salesmen_jubilee`() 
+
+
+--Процедура, выводящая список всех товаров в заданной группе (по id группы) 
+--в виде: товар, группа, артикул, отпускная цена, наличие на складе.
+
+DELIMITER //
+CREATE PROCEDURE `products_group`(in id int)
+BEGIN
+ 	select `groups`.`id`, `p`.`name`, p.article, p.price, p.avail
+ 	from `groups`, `products` as p
+ 	where `groups`.`id` = id;
+END//
+DELIMITER ;
+
+call `products_group`(1) 
+
+--Процедура, выдающая по названию товара, список его продаж с указанием ФИО торгпреда (в формате Фамилия И.О.) 
+--за последние 7 дней (по умолчанию) / 14 дней / 30 дней.
+
+DELIMITER //
+CREATE PROCEDURE `sale_by_name`(in name varchar(255), days int)
+BEGIN
+	if days is null then 
+	set days = 7;
+	end if;
+
+ 	select  `short_name`(`m`.`name`, `m`.`middlename`, `m`.`surname`) as `salesman`, s.date,  `p`.`name`
+ 	from `sales` as s, `products` as p, `salesmen` as `m`
+ 	where s.representative = m.salesman_id and s.product = p.id and p.name = name and timestampdiff(day, s.date,now()) <= days;
+END//
+DELIMITER ;
+
+call `sale_by_name`('skirt', 140) 
+
+--Процедура, выводящая сведения о несоответствии цены в журнале продаж заявленной цене самого товара с учетом времени последнего изменения цены 
+--(если изменение цены произошло позднее даты продажи, такие данные не учитывать). 
+--Если таких случаев не обнаружено, процедура должна выводить сообщение об этом.
+
+DELIMITER //
+CREATE PROCEDURE `price_isnt_equal`()
+BEGIN
+	if (select count(p.id)
+        from products as p, sales as s
+        where p.id = s.product
+        and s.sprice != p.price ) then
+
+	select p.name, s.sprice, p.price, s.date
+        from products as p, sales as s
+        where p.id = s.product
+        and s.sprice != p.price;
+	else
+	select "No inconsistencies were found";
+	end if;
+END//
+DELIMITER ;
+
+call `price_isnt_equal`();
